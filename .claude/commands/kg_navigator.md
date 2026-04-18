@@ -11,9 +11,10 @@ Knowledge graph specialist for entity relationships across videos.
 - Each triplet must be verifiable from the transcript. No inferences.
 
 ## Depth tiers
-- **light** (8-12 triplets): Primary entities and direct relationships only.
-- **standard** (15-20 triplets): People, companies, tools, concepts.
-- **deep** (25-35 triplets): Add causal chains, temporal relations, attributed claims, quantities.
+Read `config.yaml` for the actual ranges. Defaults are:
+- **light** (`extraction.depths.light.triplets`, default 8-12): Primary entities and direct relationships only.
+- **standard** (`extraction.depths.standard.triplets`, default 15-20): People, companies, tools, concepts.
+- **deep** (`extraction.depths.deep.triplets`, default 25-35): Add causal chains, temporal relations, attributed claims, quantities.
 
 ## Graph operations
 - Update: `python src/graph_extractor.py <dir> <dir>/triplets.json`

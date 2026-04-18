@@ -5,6 +5,7 @@ import json
 import re
 from yt_dlp import YoutubeDL
 from youtube_transcript_api import YouTubeTranscriptApi
+from config import cfg
 
 
 def sanitize_filename(name: str) -> str:
@@ -37,7 +38,7 @@ def fetch_transcript(video_id: str, raw_dir: str) -> tuple[str, str]:
     # Method 1: YouTube Transcript API
     try:
         api = YouTubeTranscriptApi()
-        fetched = api.fetch(video_id, ["pl", "en"])
+        fetched = api.fetch(video_id, cfg.transcription.languages)
         text = " ".join([t.text for t in fetched])
         if text.strip():
             lang = getattr(fetched, "language_code", "en") or "en"
@@ -52,13 +53,13 @@ def fetch_transcript(video_id: str, raw_dir: str) -> tuple[str, str]:
         "skip_download": True,
         "writeautomaticsub": True,
         "writesubtitles": True,
-        "subtitleslangs": ["pl", "en"],
+        "subtitleslangs": cfg.transcription.languages,
         "outtmpl": f"{raw_dir}/subs",
     }
     try:
         with YoutubeDL(ydl_opts) as ydl:
             ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=True)
-        for lang in ["pl", "en"]:
+        for lang in cfg.transcription.languages:
             sub_file = f"{raw_dir}/subs.{lang}.json3"
             if os.path.exists(sub_file):
                 with open(sub_file, "r", encoding="utf-8") as f:
@@ -94,7 +95,7 @@ def main():
         print("Error: could not extract video ID from URL")
         sys.exit(1)
 
-    if is_duplicate(video_id, os.path.join("vault", "processed_videos.md")):
+    if is_duplicate(video_id, cfg.vault.db_file):
         print(f"SKIPPED_DUPLICATE: {video_id} already in database.")
         sys.exit(0)
 
@@ -103,7 +104,7 @@ def main():
     metadata["url"] = f"https://www.youtube.com/watch?v={video_id}"
 
     channel_name = sanitize_filename(metadata["channel"]).replace(" ", "_").lower()
-    base_dir = os.path.join("vault", "content", channel_name)
+    base_dir = os.path.join(cfg.vault.content_dir, channel_name)
     raw_dir = os.path.join(base_dir, "raw")
     os.makedirs(raw_dir, exist_ok=True)
 

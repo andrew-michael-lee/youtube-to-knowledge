@@ -4,6 +4,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from config import cfg
 
 
 def slugify(name: str) -> str:
@@ -102,13 +103,13 @@ class ObsidianExporter:
         # YAML frontmatter
         lines.append("---\n")
         lines.append("tags:\n")
-        lines.append("  - youtube-to-knowledge\n")
+        lines.append(f"  - {cfg.obsidian.default_tag}\n")
         if channel:
             channel_tag = re.sub(r"\s+", "-", channel.strip().lower())
             channel_tag = re.sub(r"[^a-z0-9\-_]", "", channel_tag)
             if channel_tag:
                 lines.append(f"  - {channel_tag}\n")
-        lines.append("type: entity\n")
+        lines.append(f"type: {cfg.obsidian.entity_type}\n")
         if source_title:
             escaped = source_title.replace("\\", "\\\\").replace('"', '\\"')
             lines.append(f'source_title: "{escaped}"\n')
@@ -123,8 +124,9 @@ class ObsidianExporter:
 
         lines.append(f"# {entity}\n")
 
+        _headers = cfg.obsidian.section_headers
         if source_title or source_url:
-            lines.append("\n## Source\n\n")
+            lines.append(f"\n## {_headers['source']}\n\n")
             if source_title and source_url:
                 safe_title = source_title.replace("[", "\\[").replace("]", "\\]")
                 lines.append(f"- [{safe_title}]({source_url})\n")
@@ -134,14 +136,14 @@ class ObsidianExporter:
                 lines.append(f"- {source_url}\n")
 
         if out_rels:
-            lines.append("\n## Relations\n\n")
+            lines.append(f"\n## {_headers['relations']}\n\n")
             for pred, obj in sorted(set(out_rels)):
                 target = filename_map.get(obj, slugify(obj))
                 link = f"[[{target}|{obj}]]" if target != obj else f"[[{obj}]]"
                 lines.append(f"- {pred}: {link}\n")
 
         if in_rels:
-            lines.append("\n## Referenced by\n\n")
+            lines.append(f"\n## {_headers['referenced_by']}\n\n")
             for pred, subj in sorted(set(in_rels)):
                 target = filename_map.get(subj, slugify(subj))
                 link = f"[[{target}|{subj}]]" if target != subj else f"[[{subj}]]"

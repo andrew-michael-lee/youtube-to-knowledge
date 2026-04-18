@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from config import cfg
 
 
 def build_database(vault_dir: Path, output_file: Path) -> int:
@@ -49,7 +50,7 @@ def build_database(vault_dir: Path, output_file: Path) -> int:
 
 
 if __name__ == "__main__":
-    vault_dir = Path("vault/content")
-    output_file = Path("vault/processed_videos.md")
+    vault_dir = Path(cfg.vault.content_dir)
+    output_file = Path(cfg.vault.db_file)
     count = build_database(vault_dir, output_file)
     print(f"Database updated: {count} video(s) in {output_file}")

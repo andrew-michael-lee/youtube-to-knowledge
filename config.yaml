@@ -1,0 +1,62 @@
+# youtube-to-knowledge configuration
+# Edit this file to customise behaviour without touching source code.
+# All values shown here are the built-in defaults.
+
+vault:
+  # Root directory for all stored knowledge
+  base_dir: "vault"
+  # Where per-channel content is stored (relative to project root)
+  content_dir: "vault/content"
+  # Master list of processed videos — used for duplicate detection
+  db_file: "vault/processed_videos.md"
+
+transcription:
+  # Priority-ordered list of language codes to request from YouTube / yt-dlp.
+  # Add or reorder to match the languages you watch most.
+  languages: ["pl", "en"]
+  # yt-dlp audio format selector used when downloading audio for Whisper
+  audio_format: "m4a/bestaudio/best"
+  # Default Whisper model size (tiny | base | small | medium | large)
+  default_model: "small"
+  # Default transcription engine when fast mode fails (whisper | whisperx)
+  default_engine: "whisperx"
+
+whisperx:
+  # Number of audio chunks processed in parallel — reduce if you run out of RAM
+  batch_size: 16
+  # Compute precision (int8 for CPU, float16 for NVIDIA GPU, float32 for MPS)
+  compute_type: "int8"
+
+extraction:
+  # Default depth when --depth is not passed to /process
+  default_depth: "deep"
+  # Ranges control how much Claude writes per depth level.
+  # Each entry is [min, max].
+  depths:
+    light:
+      takeaways: [3, 5]
+      triplets: [8, 12]
+    standard:
+      takeaways: [5, 8]
+      triplets: [15, 20]
+    deep:
+      takeaways: [8, 12]
+      triplets: [25, 35]
+
+graph:
+  # PyVis HTML visualisation appearance
+  height: "750px"
+  width: "100%"
+  bgcolor: "#222222"
+  font_color: "white"
+
+obsidian:
+  # Tag added to every generated note (appears in YAML frontmatter)
+  default_tag: "youtube-to-knowledge"
+  # Value of the `type` frontmatter field on every entity note
+  entity_type: "entity"
+  # Section header labels inside each note
+  section_headers:
+    source: "Source"
+    relations: "Relations"
+    referenced_by: "Referenced by"

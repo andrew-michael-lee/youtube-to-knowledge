@@ -6,6 +6,7 @@ import re
 import torch
 import whisperx
 from yt_dlp import YoutubeDL
+from config import cfg
 
 
 def sanitize_filename(name: str) -> str:
@@ -50,21 +51,21 @@ def main():
     parser.add_argument("url", help="YouTube video URL")
     parser.add_argument(
         "--model",
-        default="small",
+        default=cfg.transcription.default_model,
         choices=["tiny", "base", "small", "medium", "large-v2", "large-v3"],
-        help="Whisper model size (default: small)",
+        help=f"Whisper model size (default: {cfg.transcription.default_model})",
     )
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=16,
-        help="Batch size for transcription (default: 16)",
+        default=cfg.whisperx.batch_size,
+        help=f"Batch size for transcription (default: {cfg.whisperx.batch_size})",
     )
     parser.add_argument(
         "--compute-type",
-        default="int8",
+        default=cfg.whisperx.compute_type,
         choices=["int8", "float16", "float32"],
-        help="Compute type (default: int8, use float16 for GPU)",
+        help=f"Compute type (default: {cfg.whisperx.compute_type}, use float16 for GPU)",
     )
     parser.add_argument(
         "--no-diarize",
@@ -78,7 +79,7 @@ def main():
         print("Error: could not extract video ID from URL")
         sys.exit(1)
 
-    if is_duplicate(video_id, os.path.join("vault", "processed_videos.md")):
+    if is_duplicate(video_id, cfg.vault.db_file):
         print(f"SKIPPED_DUPLICATE: {video_id} already in database.")
         sys.exit(0)
 
@@ -92,14 +93,14 @@ def main():
         print(f"Warning: metadata extraction failed: {e}")
 
     channel_name = sanitize_filename(metadata["channel"]).replace(" ", "_").lower()
-    base_dir = os.path.join("vault", "content", channel_name)
+    base_dir = os.path.join(cfg.vault.content_dir, channel_name)
     raw_dir = os.path.join(base_dir, "raw")
     os.makedirs(raw_dir, exist_ok=True)
 
     temp_audio = f"temp_{video_id}.m4a"
     print("Downloading audio...")
     try:
-        with YoutubeDL({"format": "m4a/bestaudio/best", "outtmpl": temp_audio, "quiet": True}) as ydl:
+        with YoutubeDL({"format": cfg.transcription.audio_format, "outtmpl": temp_audio, "quiet": True}) as ydl:
             ydl.download([args.url])
     except Exception as e:
         print(f"Error downloading audio: {e}")

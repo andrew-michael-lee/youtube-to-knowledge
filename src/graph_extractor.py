@@ -2,6 +2,7 @@ import json
 import os
 import networkx as nx
 from pyvis.network import Network
+from config import cfg
 
 
 class GraphExtractor:
@@ -39,10 +40,10 @@ class GraphExtractor:
     def generate_visualization(self, filename: str = "graph.html") -> str:
         """Generate an interactive HTML visualization with PyVis."""
         net = Network(
-            height="750px",
-            width="100%",
-            bgcolor="#222222",
-            font_color="white",
+            height=cfg.graph.height,
+            width=cfg.graph.width,
+            bgcolor=cfg.graph.bgcolor,
+            font_color=cfg.graph.font_color,
             directed=True,
         )
         for node in self.graph.nodes():
