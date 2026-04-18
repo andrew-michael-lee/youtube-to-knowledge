@@ -10,7 +10,7 @@ Read `config.yaml` from the project root. Extract the following values (fall bac
 | `vault.db_file` | `vault/processed_videos.md` | Duplicate check file |
 | `vault.content_dir` | `vault/content` | Output root |
 | `extraction.default_depth` | `standard` | Depth when --depth not passed |
-| `transcription.default_engine` | `whisper` | Engine when --engine not passed |
+| `transcription.default_engine` | `whisperx` | Engine when --engine not passed |
 | `extraction.depths.light.takeaways` | `[3, 5]` | Takeaway range for light |
 | `extraction.depths.light.triplets` | `[8, 12]` | Triplet range for light |
 | `extraction.depths.standard.takeaways` | `[5, 8]` | Takeaway range for standard |
@@ -24,7 +24,7 @@ Parse `$ARGUMENTS` to extract:
 - **URLs**: All arguments that start with `http` or look like YouTube video IDs. There may be one or many.
 - **Playlist**: If a URL contains `playlist?list=`, it is a playlist — expand it first (see Step 0b).
 - **--depth**: `light` | `standard` | `deep` (default: value of `extraction.default_depth` from config).
-- **--engine**: `whisperx` | `whisper` (default: value of `transcription.default_engine` from config).
+- **--engine**: `fast` — skip WhisperX and Whisper, use YouTube subtitle API only (fastest, no speaker tags).
 - **--obsidian**: flag (no value). If present, export entities as Obsidian markdown notes.
 
 Examples:
@@ -47,21 +47,27 @@ Each line of stdout is a video URL. Replace the playlist URL in your working lis
 Read the file at `vault.db_file` (from config). Extract the video ID from the URL. If the ID appears in the file, skip this video (print "SKIPPED: already processed") and move to the next one.
 
 ## Step 2 — Transcription
+Attempt transcription in this priority order, stopping as soon as one succeeds.
+
+**If `--engine fast` was passed**, skip directly to Attempt 3.
+
+**Attempt 1 — WhisperX** (best quality: word-level timestamps + speaker diarization):
+Run: `python src/transcribe_whisperx.py <URL>`
+
+**Attempt 2 — Whisper** (fallback if WhisperX is not installed or fails):
+Run: `python src/transcribe_whisper.py <URL>`
+
+**Attempt 3 — Fast mode** (last resort: YouTube subtitle API, no speaker data):
 Run: `python src/transcribe.py <URL>`
 
-Parse stdout for:
+Parse stdout from whichever attempt succeeds for:
 - `CHANNEL_DIR:<path>`
 - `RAW_FILE:<path>`
 - `SOURCE_LANG:<lang>`
 - `TITLE:<title>`
-- `ENRICHED_FILE:<path>` (optional, only from WhisperX)
+- `ENRICHED_FILE:<path>` (present when WhisperX succeeds — use this for richer context)
 
-If the script exits with error code 1 (no transcript found):
-- If engine is `whisper` (default): run `python src/transcribe_whisper.py <URL>`
-- If engine is `whisperx`: run `python src/transcribe_whisperx.py <URL>`
-- If the chosen engine also fails, try the other as a last resort.
-
-Parse the same output variables from whichever script succeeds.
+If all three attempts fail, report the error and stop processing this video.
 
 ## Step 3 — Summary
 Read the transcript. **If ENRICHED_FILE was provided, read it instead of RAW_FILE** for richer context (timestamps, speaker labels). Otherwise read RAW_FILE.
