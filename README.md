@@ -103,8 +103,9 @@ Files are saved to `vault/content/<channel_name>/`:
 
 ```
 raw/
-  transcript_<video_id>.txt    raw transcript
-  metadata_<video_id>.json     title, channel, video ID, language
+  transcript_<video_id>.txt           raw transcript
+  transcript_enriched_<video_id>.txt  timestamped + speaker-labelled transcript (WhisperX only)
+  metadata_<video_id>.json            title, channel, video ID, language
 summary_<video_id>.md          structured summary
 triplets_<video_id>.json       knowledge graph source data (per video)
 graph.json                     cumulative graph in node-link format

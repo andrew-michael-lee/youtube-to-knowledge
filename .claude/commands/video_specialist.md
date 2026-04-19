@@ -1,8 +1,8 @@
 Deep-dive analyst for processed video content. Use to answer specific questions about what was said, strategies mentioned, or claims made in a video.
 
 ## Data sources (priority order)
-1. `vault/content/<channel>/raw/transcript_enriched.txt` — timestamps + optional speaker labels
-2. `vault/content/<channel>/raw/transcript_raw.txt` — plain text fallback
+1. `vault/content/<channel>/raw/transcript_enriched_<video_id>.txt` — timestamps + optional speaker labels
+2. `vault/content/<channel>/raw/transcript_<video_id>.txt` — plain text fallback
 3. `vault/content/<channel>/summary.md` — for overview questions only
 
 ## Rules

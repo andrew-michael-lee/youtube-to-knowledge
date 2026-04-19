@@ -159,7 +159,7 @@ def main():
     with open(os.path.join(raw_dir, raw_filename), "w", encoding="utf-8") as f:
         f.write(transcript)
 
-    enriched_path = os.path.join(raw_dir, "transcript_enriched.txt")
+    enriched_path = os.path.join(raw_dir, f"transcript_enriched_{video_id}.txt")
     with open(enriched_path, "w", encoding="utf-8") as f:
         f.write(enriched)
 
